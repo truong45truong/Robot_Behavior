@@ -4,21 +4,22 @@
 #include<iostream>
 #include "objects.hpp"
 #include "logger.hpp"
-
+#include "utils.hpp"
+#include "image_bmp.hpp"
 class Robot {
 public:
-    bool move_to(Point point);
-    bool line_to(Point point);
-    bool circle_to(Point point);
-
+    static Robot* Instance();
+    bool MoveTo(const Point& point);
+    bool LineTo(const Point& point);
+    // bool CircleTo(Point point);
+    void CreateGridSize(const int& size) noexcept;
+    void ExportGridMap(ImageBMP& img) noexcept;
     void operator=(const Robot& ) = delete;
     Robot(const Robot&) = delete;
-
-    static Robot* Instance();
 private:
     static Robot* instance_;
     GridMap grid_map_;
-    
+    Point point_current_;
     Robot() = default;
 };
 

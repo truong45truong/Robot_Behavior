@@ -6,74 +6,37 @@
 #include <vector>
 #include <cstdint>
 #include "objects.hpp"
+#include "logger.hpp"
 
-class Image {
+#define Fx(x1, y1, x2, y2, x) ((y1) + ((y2) - (y1)) * ((x) - (x1)) / ((x2) - (x1)))  // y = y1 + m(x - x1) [ m = (y2 -y1) / (x2 - x1) ] 
+class ImageBMP {
 public:
-    Image(int width, int height) : width(width), height(height) {
-        pixels.resize(width * height * 3, 255); // Initialize with white pixels
+    ImageBMP(int width_, int height_);
+
+    void Mark(const Point& point_mark,const int& size_mark, bitmap_data::RGB_24 rgb) noexcept;
+
+    inline void setPixel(int x, int y, bitmap_data::RGB_24 rgb) noexcept;
+
+    void drawLine(int x1, int y1, int x2, int y2, bitmap_data::RGB_24 rgb);
+
+    void saveBMP_RGB24(const std::string& filename);
+
+    constexpr inline int GetWidth() const noexcept {
+        return width_;
     }
 
-    void setPixel(int x, int y, uint8_t r, uint8_t g, uint8_t b) {
-        if (x < 0 || x >= width || y < 0 || y >= height) return; // Out of bounds
-        int index = (y * width + x) * 3;
-        pixels[index] = b;   // BMP stores color as BGR
-        pixels[index + 1] = g;
-        pixels[index + 2] = r;
+    constexpr inline int GetHeigth() const noexcept {
+        return height_;
     }
 
-    void saveBMP(const std::string& filename) {
-        std::ofstream file(filename, std::ios::binary);
-        if (!file) {
-            std::cerr << "Error: Could not write to file " << filename << std::endl;
-            return;
-        }
-
-        // BMP Header
-        uint32_t fileSize = 54 + pixels.size();
-        uint32_t dataOffset = 54;
-        uint32_t headerSize = 40;
-        uint16_t planes = 1;
-        uint16_t bitsPerPixel = 24;
-        uint32_t compression = 0;
-        uint32_t imageSize = pixels.size();
-        uint32_t ppm = 2835; // 72 DPI
-
-        file.put('B').put('M'); // Magic bytes
-        file.write(reinterpret_cast<char*>(&fileSize), 4);
-        file.write("\0\0\0\0", 4);
-        file.write(reinterpret_cast<char*>(&dataOffset), 4);
-
-        // DIB Header
-        file.write(reinterpret_cast<char*>(&headerSize), 4);
-        file.write(reinterpret_cast<char*>(&width), 4);
-        file.write(reinterpret_cast<char*>(&height), 4);
-        file.write(reinterpret_cast<char*>(&planes), 2);
-        file.write(reinterpret_cast<char*>(&bitsPerPixel), 2);
-        file.write(reinterpret_cast<char*>(&compression), 4);
-        file.write(reinterpret_cast<char*>(&imageSize), 4);
-        file.write(reinterpret_cast<char*>(&ppm), 4);
-        file.write(reinterpret_cast<char*>(&ppm), 4);
-        file.write("\0\0\0\0", 4);
-        file.write("\0\0\0\0", 4);
-
-        // Pixel Data
-        for (int y = height - 1; y >= 0; --y) { // BMP stores rows bottom to top
-            file.write(reinterpret_cast<char*>(&pixels[y * width * 3]), width * 3);
-            // Pad rows to multiple of 4 bytes
-            for (int p = 0; p < (4 - (width * 3) % 4) % 4; ++p) {
-                file.put(0);
-            }
-        }
-
-        file.close();
-        std::cout << "Image saved to " << filename << std::endl;
+    std::vector<uint8_t> GetPixels() const noexcept {
+        return pixels_;
     }
-
 private:
-    int width, height;
-    std::vector<uint8_t> pixels;
-
+    int width_, height_;
+    bitmap_data::BMPHeader bmp_header_;
+    bitmap_data::DIBHeader dib_header_;
+    std::vector<uint8_t> pixels_;
 };
-
 
 #endif
