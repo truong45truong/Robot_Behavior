@@ -8,6 +8,7 @@
 #include "objects.hpp"
 #include "logger.hpp"
 #include <regex>
+#include <cmath>
 
 class Utils {
 public:
@@ -54,6 +55,14 @@ public:
         }
     
         return true;
+    }
+
+    static inline double DistanceToLine(const Point& point_0, const Point& point_1, const Point& point_2){
+        double A = point_2.y - point_1.y;
+        double B = point_1.x - point_2.x;
+        double C = point_2.x*point_1.y - point_1.x*point_2.y;
+
+        return std::abs(A * point_0.x + B * point_0.y + C) / std::sqrt(A * A + B * B);
     }
 private:
     Utils() = default;

@@ -6,16 +6,19 @@
 #include "logger.hpp"
 #include "utils.hpp"
 #include "image_bmp.hpp"
+#include "./cmd/cmd_line_to.hpp"
+#include "./cmd/cmd_move_to.hpp"
 class Robot {
 public:
     static Robot* Instance();
-    bool MoveTo(const Point& point);
-    bool LineTo(const Point& point);
-    // bool CircleTo(Point point);
+    bool ExecuteCMD(CMDHandler* cmd_handler,const Point& point);
     void CreateGridSize(const int& size) noexcept;
     void ExportGridMap(ImageBMP& img) noexcept;
     void operator=(const Robot& ) = delete;
     Robot(const Robot&) = delete;
+    GridMap GetGridMap() const {
+        return grid_map_;
+    }
 private:
     static Robot* instance_;
     GridMap grid_map_;

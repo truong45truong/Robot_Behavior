@@ -12,46 +12,27 @@ Robot* Robot::Instance(){
     return instance_;
 }
 
-bool Robot::MoveTo(const Point& point){
-    LOG_INFO(("Robot move to x=" + std::to_string(point.x) + " y=" + std::to_string(point.y)).c_str());
-    if( point.x < 0 || point.x >  grid_map_.width || point.y < 0 || point.y >  grid_map_.height ){
-        LOG_WARN("Point out of bounds");
-        return false;
-    }
-    point_current_ = point;
-    LOG_DEBUG(("The current position of the robot is x=" + std::to_string(point_current_.x) + " y=" + std::to_string(point_current_.y)).c_str());
-    return true;
-}
-
-bool Robot::LineTo(const Point& point){
-    LOG_INFO(("Robot line to x=" + std::to_string(point.x) + " y=" + std::to_string(point.y)).c_str());
-    if( point.x < 0 || point.x >  grid_map_.width || point.y < 0 || point.y >  grid_map_.height ){
-        LOG_WARN("Point out of bounds");
-        return false;
-    }
-    int start_x = std::min(point_current_.x, point.x);
-    int end_x = std::max(point_current_.x, point.x);
-    int start_y = std::min(point_current_.y, point.y);
-    int end_y = std::max(point_current_.y, point.y);
-
-    for(int i = start_x ; i <= end_x ; i ++ ){
-        for(int j = start_y ; j <= end_y; j ++){
-            if(Utils::IsPointOnLineSegment(Point(i,j), point_current_, point)){
-                LOG_DEBUG(("Point x=" + std::to_string(i) + " y= " + std::to_string(j) + " is marked" ).c_str());
-                grid_map_.point_marks.push_back(Point(i,j));
+bool Robot::ExecuteCMD(CMDHandler* cmd_handler, const Point& point){
+    cmd_handler->Init(point_current_);
+    if(cmd_handler->Execute(point,grid_map_)){
+        point_current_ = point;
+        std::vector<Point> list_point_mark = cmd_handler->GetPointMark();
+        if(list_point_mark.size() > 0){
+            for(int i = 0 ; i < list_point_mark.size(); i ++){
+                LOG_DEBUG(("Point x=" + std::to_string(list_point_mark[i].x) + " y= " + std::to_string(list_point_mark[i].y) + " is marked" ).c_str());
             }
         }
+        return true;
     }
-    point_current_ = point;
-
-    LOG_DEBUG(("The current position of the robot is x=" + std::to_string(point_current_.x) + " y=" + std::to_string(point_current_.y)).c_str());
-    return true;
+    return false;
 }
+
 
 void Robot::CreateGridSize(const int& size) noexcept{
     LOG_INFO("Creating grid map size");
     grid_map_.width = size;
     grid_map_.height = size;
+    grid_map_.point_marks = {};
 }
 
 void Robot::ExportGridMap(ImageBMP& image) noexcept{
@@ -81,6 +62,7 @@ void Robot::ExportGridMap(ImageBMP& image) noexcept{
             grid_map_.point_marks[mark_index].x*(width_image / (grid_map_.width +1)) + 2*padding,
             grid_map_.point_marks[mark_index].y*(height_image / (grid_map_.height +1)) + 2*padding
         };
+
         image.Mark(point_mark, int(padding/2),  rgb_black);
     }
 }

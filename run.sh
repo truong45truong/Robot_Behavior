@@ -1,2 +1,20 @@
-g++ ./include/image_bmp.hpp ./include/logger.hpp ./include/objects.hpp ./include/robot.hpp ./src/main.cpp ./src/robot.cpp ./src/image_bmp.cpp -o main
+g++ \
+    ./include/image_bmp.hpp \
+    ./include/logger.hpp \
+    ./include/objects.hpp \
+    ./include/robot.hpp \
+    ./include/cmd_registry_factory.hpp \
+    ./include/controller_console.hpp \
+    ./include/controller_file.hpp \
+    ./include/controller_Interface.hpp \
+    ./include/cmd/cmd_handler.hpp \
+    ./include/cmd/cmd_line_to.hpp \
+    ./include/cmd/cmd_move_to.hpp \
+    ./src/main.cpp \
+    ./src/robot.cpp \
+    ./src/image_bmp.cpp \
+    ./src/controller_file.cpp \
+    ./src/cmd_registry_factory.cpp \
+    ./src/controller_console.cpp \
+    -o main
 ./main
